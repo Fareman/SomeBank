@@ -1,8 +1,8 @@
-﻿using Bank.DB.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace Bank.DB
+﻿namespace Bank.Infrastructure
 {
+    using Bank.Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+
     /// <summary>
     /// Контекст работы с БД.
     /// </summary>
@@ -14,7 +14,6 @@ namespace Bank.DB
         /// <param name="options"> Параметры контекста. </param>
         public BankContext(DbContextOptions options) : base(options)
         {
-            Database.EnsureCreatedAsync();
         }
 
         /// <summary>
@@ -26,5 +25,14 @@ namespace Bank.DB
         /// Клиенты.
         /// </summary>
         public DbSet<Customer> Customers { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Account>()
+                .HasOne(a => a.Customer)
+                .WithMany(c => c.Accounts)
+                .HasForeignKey(a => a.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }
