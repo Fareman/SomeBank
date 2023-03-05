@@ -1,9 +1,9 @@
 # Some-Bank
 
-## Инструкция
+## РРЅСЃС‚СЂСѓРєС†РёСЏ
 
-1. Скачайте проект
-2. Запустите Docker
-3. Запустите контейнер с PostgreSQL в Docker Desktop 
+1. РЎРєР°С‡Р°Р№С‚Рµ РїСЂРѕРµРєС‚
+2. Р—Р°РїСѓСЃС‚РёС‚Рµ Docker
+3. Р—Р°РїСѓСЃС‚РёС‚Рµ РєРѕРЅС‚РµР№РЅРµСЂ СЃ PostgreSQL РІ Docker Desktop 
 `docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres`
-4. Запустите проект.
+4. Р—Р°РїСѓСЃС‚РёС‚Рµ РїСЂРѕРµРєС‚.
