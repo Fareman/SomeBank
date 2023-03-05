@@ -24,6 +24,7 @@
             _context = context;
         }
 
+        ///<inheritdoc/>>
         public async Task<Account> CreateAccountAsync(Account account)
         {
             await _context.Accounts.AddAsync(account);
@@ -32,21 +33,35 @@
             return account;
         }
 
-        public async Task EditBalanceAsync(int accountId, decimal newBalance)
+        ///<inheritdoc/>>
+        public async Task EditBalanceAsync(int accountId, decimal amount)
         {
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
             if (account == null)
                 throw new ArgumentNullException("Счет не найден.");
 
-            account.Balance = newBalance;
-            _context.SaveChanges();
+            using (var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+            {
+                try
+                {
+                    account.Balance += amount;
+                    _context.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
+            };
         }
 
         ///<inheritdoc/>>
-        public async Task<decimal?> GetAccountBalanceByIdAsync(int id)
+        public async Task<decimal> GetAccountBalanceByIdAsync(int id)
         {
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id);
-            return account?.Balance;
+
+            var account = await _context.Accounts.FirstAsync(a => a.Id == id);
+            return account.Balance;
+
         }
     }
 }
