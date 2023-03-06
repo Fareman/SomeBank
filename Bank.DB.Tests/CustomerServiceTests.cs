@@ -12,10 +12,7 @@
         public async Task CreateCustomerTest()
         {
             // Arrange
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-            var options = new DbContextOptionsBuilder<BankContext>()
-                .UseNpgsql("Host=localhost;Username=postgres;Password=mysecretpassword;Port=5432;Database=BankDB;")
-                .Options;
+            var options = GetDbContextOptions();
 
             var context = new BankContext(options);
             context.Database.Migrate();
@@ -39,14 +36,11 @@
         public async void ConcurrentlyEditBalanceTest()
         {
             // Arrange
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-            var options = new DbContextOptionsBuilder<BankContext>()
-                .UseNpgsql("Host=localhost;Username=postgres;Password=mysecretpassword;Port=5432;Database=BankDB;")
-                .Options;
-
+            var options = GetDbContextOptions();
             var context = new BankContext(options);
             context.Database.Migrate();
-            var users = Enumerable.Range(1, 1).ToList();
+
+            var users = Enumerable.Range(1, 50).ToList();
             var customerIds = await CreateCustomers(context, users);
             var accountIds = await CreateAccountsAsync(context, customerIds);
 
@@ -65,12 +59,17 @@
             // Assert
             for (var i = 0; i < accountIds.Count; i++)
             {
-                var id = accountIds[i];
                 var initialBalance = initialBalances[i];
                 var finalBalance = finalBalances[i];
                 var expectedBalance = initialBalance + (10 * tasks.Count);
                 Assert.Equal(expectedBalance, finalBalance);
             }
+        }
+        private static DbContextOptions<BankContext> GetDbContextOptions()
+        {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            return new DbContextOptionsBuilder<BankContext>().
+                   UseNpgsql("Host=localhost;Username=postgres;Password=mysecretpassword;Port=5432;Database=BankDB;").Options;
         }
 
         private static async Task<List<decimal>> GetCurrentBalanceAsync(DbContextOptions<BankContext> options, List<int> accountIds)
@@ -78,6 +77,7 @@
             var context = new BankContext(options);
             var accountRepository = new AccountRepository(context);
             var tasks = accountIds.Select(async id => await accountRepository.GetAccountBalanceByIdAsync(id));
+
             return (await Task.WhenAll(tasks)).ToList();
         }
 
@@ -113,16 +113,14 @@
             return dbCustomers.Select(c => c.Id).ToList();
         }
 
-        private async void UpdateBalances(List<int> accountIds, DbContextOptions<BankContext> options)
+        private static async void UpdateBalances(List<int> accountIds, DbContextOptions<BankContext> options)
         {
             var context = new BankContext(options);
             var accountRepository = new AccountRepository(context);
-
-            for (var i = 0; i < accountIds.Count; i++)
+            const int Amount = 10;
+            foreach (var id in accountIds)
             {
-                var id = accountIds[i];
-                var amount = 10;
-                await accountRepository.EditBalanceAsync(id, amount);
+                await accountRepository.EditBalanceAsync(id, Amount);
             }
         }
     }

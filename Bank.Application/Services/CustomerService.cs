@@ -6,20 +6,26 @@ namespace Bank.Application.Services
     using Bank.Domain.Entities;
     using Bank.Domain.Interfaces;
 
+    /// <summary>
+    /// Сервис для работы с клиентами.
+    /// </summary>
     public class CustomerService : ICustomerService
     {
+        /// <summary>
+        /// Репозиторий клиентов.
+        /// </summary>
         private readonly ICustomerRepository _customerRepository;
 
+        /// <summary>
+        /// Сервис для работы с клиентами.
+        /// </summary>
+        /// <param name="customerRepository"> Репозиторий клиентов. </param>
         public CustomerService(ICustomerRepository customerRepository)
         {
             _customerRepository = customerRepository;
         }
 
-        /// <summary>
-        /// Регистрация клиента.
-        /// </summary>
-        /// <param name="customerDto"> Дто клиента. </param>
-        /// <returns> Дто клиента с данными из БД. </returns>
+        /// <inheritdoc />
         public async Task<CustomerDto> RegisterCustomerAsync(CustomerDto customerDto)
         {
             var customer = new Customer

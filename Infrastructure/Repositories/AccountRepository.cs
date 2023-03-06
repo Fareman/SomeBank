@@ -56,12 +56,10 @@
         }
 
         ///<inheritdoc/>>
-        public async Task<decimal> GetAccountBalanceByIdAsync(int id)
+        public async Task<decimal> GetAccountBalanceByIdAsync(int accountId)
         {
-
-            var account = await _context.Accounts.FirstAsync(a => a.Id == id);
+            var account = await _context.Accounts.FirstAsync(a => a.Id == accountId);
             return account.Balance;
-
         }
     }
 }

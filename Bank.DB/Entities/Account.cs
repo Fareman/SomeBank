@@ -4,7 +4,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     /// <summary>
-    /// Счет пользователя.
+    /// Счет клиента.
     /// </summary>
     public class Account : BaseIdEntity
     {
