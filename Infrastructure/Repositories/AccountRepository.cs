@@ -16,6 +16,11 @@
         private readonly BankContext _context;
 
         /// <summary>
+        /// Блокировщик.
+        /// </summary>
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
+        /// <summary>
         /// Репозиторий счетов.
         /// </summary>
         /// <param name="context"> Контекст БД. </param>
@@ -28,7 +33,7 @@
         public async Task<Account> CreateAccountAsync(Account account)
         {
             await _context.Accounts.AddAsync(account);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return account;
         }
@@ -36,29 +41,29 @@
         ///<inheritdoc/>>
         public async Task EditBalanceAsync(int accountId, decimal amount)
         {
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
-            if (account == null)
-                throw new ArgumentNullException("Счет не найден.");
+            await _semaphore.WaitAsync();
 
-            using (var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+            try
             {
-                try
-                {
-                    account.Balance += amount;
-                    _context.SaveChanges();
-                    transaction.Commit();
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                }
-            };
+                var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
+                if (account == null)
+                    throw new ArgumentNullException("Счет не найден.");
+
+                account.Balance += amount;
+                _context.SaveChanges();
+                _semaphore.Release();
+            }
+            catch
+            {
+                _semaphore.Release();
+            }
         }
 
         ///<inheritdoc/>>
         public async Task<decimal> GetAccountBalanceByIdAsync(int accountId)
         {
-            var account = await _context.Accounts.FirstAsync(a => a.Id == accountId);
+            var account = await _context.Accounts.AsNoTracking()
+                                                 .FirstAsync(a => a.Id == accountId);
             return account.Balance;
         }
     }

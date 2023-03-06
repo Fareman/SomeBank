@@ -32,7 +32,7 @@
         /// Дата рождения.
         /// </summary>
         [Required]
-        public DateTime BirthDate { get; set; }
+        public DateTimeOffset BirthDate { get; set; }
 
         /// <summary>
         /// Навигационное свойство.

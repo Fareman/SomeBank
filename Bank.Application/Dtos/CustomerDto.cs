@@ -28,6 +28,6 @@
         /// <summary>
         /// Дата рождения.
         /// </summary>
-        public DateTime BirthDate { get; set; }
+        public DateTimeOffset BirthDate { get; set; }
     }
 }
